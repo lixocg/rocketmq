@@ -1,0 +1,2 @@
+RocketMQ 的协议格式如下，开头4字节表示整个消息长度，随后4字节表示头部数据的长度，最后就是消息体的长度:
+<4 byte length> <4 byte header length> <N byte header data> <N byte body data>

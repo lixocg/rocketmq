@@ -17,6 +17,7 @@
 package org.apache.rocketmq.remoting.protocol;
 
 import com.alibaba.fastjson.annotation.JSONField;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -24,6 +25,7 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.rocketmq.remoting.CommandCustomHeader;
 import org.apache.rocketmq.remoting.annotation.CFNotNull;
 import org.apache.rocketmq.remoting.common.RemotingHelper;
@@ -39,7 +41,7 @@ public class RemotingCommand {
     private static final int RPC_TYPE = 0; // 0, REQUEST_COMMAND
     private static final int RPC_ONEWAY = 1; // 0, RPC
     private static final Map<Class<? extends CommandCustomHeader>, Field[]> CLASS_HASH_MAP =
-        new HashMap<Class<? extends CommandCustomHeader>, Field[]>();
+            new HashMap<Class<? extends CommandCustomHeader>, Field[]>();
     private static final Map<Class, String> CANONICAL_NAME_CACHE = new HashMap<Class, String>();
     // 1, Oneway
     // 1, RESPONSE_COMMAND
@@ -69,18 +71,58 @@ public class RemotingCommand {
         }
     }
 
+    /**********消息协议****start*************************************************************/
+    /**************************
+     *
+     * 消息长度 | 序列化类型&&头部长度  |  消息头数据  |  消息体数据
+     *
+     *  (1）消息长度：总长度，四个字节存储，占用一个int类型；
+     *
+     * （2）序列化类型&消息头长度：同样占用一个int类型，第一个字节表示序列化类型，后面三个字节表示消息头长度；
+     *
+     * （3）消息头数据：经过序列化后的消息头数据；
+     *
+     * （4）消息主体数据：消息主体的二进制字节数据内容； 消息的编码和解码分别在RemotingCommand类的encode和decode方法中完成，下面是消息编码encode方法的具体实现：
+     ******/
+
+
+    /*****消息头***/
+    /**
+     * 请求操作码，应答方根据不同的请求码进行不同的业务处理|||应答响应码。0表示成功，非0则表示各种错误
+     */
     private int code;
+    /**
+     * 请求方实现的语言|||应答方实现的语言
+     */
     private LanguageCode language = LanguageCode.JAVA;
+    /**
+     * 请求方程序的版本|||应答方程序的版本
+     */
     private int version = 0;
+    /**
+     * 相当于reqeustId，在同一个连接上的不同请求标识码，与响应消息中的相对应|||应答不做修改直接返回
+     */
     private int opaque = requestId.getAndIncrement();
+    /***
+     * 区分是普通RPC还是onewayRPC得标志|||区分是普通RPC还是onewayRPC得标志
+     */
     private int flag = 0;
+    /**
+     * 传输自定义文本信息	||| 传输自定义文本信息
+     */
     private String remark;
+    /**
+     * 请求自定义扩展信息	|||  响应自定义扩展信息
+     */
     private HashMap<String, String> extFields;
     private transient CommandCustomHeader customHeader;
 
     private SerializeType serializeTypeCurrentRPC = serializeTypeConfigInThisServer;
 
+    /*****消息头***/
     private transient byte[] body;
+
+    /**********消息格式****end*************************************************************/
 
     protected RemotingCommand() {
     }
@@ -111,7 +153,7 @@ public class RemotingCommand {
     }
 
     public static RemotingCommand createResponseCommand(int code, String remark,
-        Class<? extends CommandCustomHeader> classHeader) {
+                                                        Class<? extends CommandCustomHeader> classHeader) {
         RemotingCommand cmd = new RemotingCommand();
         cmd.markResponseType();
         cmd.setCode(code);
@@ -212,8 +254,11 @@ public class RemotingCommand {
         byte[] result = new byte[4];
 
         result[0] = type.getCode();
+        //右移16位后再和255与->“16-24位”
         result[1] = (byte) ((source >> 16) & 0xFF);
+        //右移8位后再和255与->“8-16位”
         result[2] = (byte) ((source >> 8) & 0xFF);
+        //右移0位后再和255与->“8-0位”
         result[3] = (byte) (source & 0xFF);
         return result;
     }
@@ -232,7 +277,7 @@ public class RemotingCommand {
     }
 
     public CommandCustomHeader decodeCommandCustomHeader(
-        Class<? extends CommandCustomHeader> classHeader) throws RemotingCommandException {
+            Class<? extends CommandCustomHeader> classHeader) throws RemotingCommandException {
         CommandCustomHeader objectHeader;
         try {
             objectHeader = classHeader.newInstance();
@@ -326,7 +371,7 @@ public class RemotingCommand {
     }
 
     public ByteBuffer encode() {
-        // 1> header length size
+        // 1> 消息总长度
         int length = 4;
 
         // 2> header data length
@@ -338,6 +383,7 @@ public class RemotingCommand {
             length += body.length;
         }
 
+        //这是因为在消息总长度的计算中没有将存储头部长度的4个字节计算在内
         ByteBuffer result = ByteBuffer.allocate(4 + length);
 
         // length
@@ -529,8 +575,8 @@ public class RemotingCommand {
     @Override
     public String toString() {
         return "RemotingCommand [code=" + code + ", language=" + language + ", version=" + version + ", opaque=" + opaque + ", flag(B)="
-            + Integer.toBinaryString(flag) + ", remark=" + remark + ", extFields=" + extFields + ", serializeTypeCurrentRPC="
-            + serializeTypeCurrentRPC + "]";
+                + Integer.toBinaryString(flag) + ", remark=" + remark + ", extFields=" + extFields + ", serializeTypeCurrentRPC="
+                + serializeTypeCurrentRPC + "]";
     }
 
     public SerializeType getSerializeTypeCurrentRPC() {

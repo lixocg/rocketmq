@@ -66,8 +66,21 @@ import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 public class NettyRemotingServer extends NettyRemotingAbstract implements RemotingServer {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(RemotingHelper.ROCKETMQ_REMOTING);
     private final ServerBootstrap serverBootstrap;
+
+    /**
+     * 用来处理ChannelHandler业务逻辑，workGroup
+     */
     private final EventLoopGroup eventLoopGroupSelector;
+
+    /**
+     * 用来接收连接，bossDroup
+     */
     private final EventLoopGroup eventLoopGroupBoss;
+
+    /**
+     * nettyServerConfig 用来封装对 Netty 的配置信息，包括 SendBufSize、RcvBufSize 等。
+     * 最重要的是，添加了 NettyEncoder、NettyDecoder、IdleStateHandler、NettyConnetManageHandler、NettyServerHandler 几个ChannelHandler。
+     */
     private final NettyServerConfig nettyServerConfig;
 
     private final ExecutorService publicExecutor;

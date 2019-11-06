@@ -826,6 +826,7 @@ public class BrokerController {
             this.messageStore.start();
         }
 
+        //启动封装netty客户端
         if (this.remotingServer != null) {
             this.remotingServer.start();
         }
@@ -859,10 +860,10 @@ public class BrokerController {
             handleSlaveSynchronize(messageStoreConfig.getBrokerRole());
         }
 
-
-
+        //向所有的NameSrv注册Broker自身信息的
         this.registerBrokerAll(true, false, true);
 
+        //定期向NameSrv发送心跳包，NameSrv会每隔一段时间扫一遍broker列表，剔除长时间没发送心跳包的Broker。
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override
