@@ -17,6 +17,7 @@
 
 package org.apache.rocketmq.remoting;
 
+import com.alibaba.fastjson.JSON;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -51,7 +52,10 @@ public class RemotingServerTest {
         remotingServer.registerProcessor(0, new NettyRequestProcessor() {
             @Override
             public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) {
+                System.out.println("收到客户端消息，addr="+ctx.channel().remoteAddress()+",data="+ JSON.toJSONString(request));
                 request.setRemark("Hi " + ctx.channel().remoteAddress());
+                request.setBody("from server".getBytes());
+                ctx.writeAndFlush(request);
                 return request;
             }
 
@@ -72,6 +76,18 @@ public class RemotingServerTest {
 
     public static RemotingClient createRemotingClient(NettyClientConfig nettyClientConfig) {
         RemotingClient client = new NettyRemotingClient(nettyClientConfig);
+        client.registerProcessor(0, new NettyRequestProcessor() {
+            @Override
+            public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) throws Exception {
+                System.out.println("收到服务端数据:"+JSON.toJSONString(request));
+                return request;
+            }
+
+            @Override
+            public boolean rejectRequest() {
+                return false;
+            }
+        },Executors.newCachedThreadPool());
         client.start();
         return client;
     }
