@@ -56,6 +56,10 @@ public class RemotingCommand {
     private static final String BOOLEAN_CANONICAL_NAME_1 = Boolean.class.getCanonicalName();
     private static final String BOOLEAN_CANONICAL_NAME_2 = boolean.class.getCanonicalName();
     private static volatile int configVersion = -1;
+
+    /**
+     * requestId是RPC请求的序号，每次请求的时候都会increment一下
+     */
     private static AtomicInteger requestId = new AtomicInteger(0);
 
     private static SerializeType serializeTypeConfigInThisServer = SerializeType.JSON;
@@ -105,6 +109,9 @@ public class RemotingCommand {
     private int opaque = requestId.getAndIncrement();
     /***
      * 区分是普通RPC还是onewayRPC得标志|||区分是普通RPC还是onewayRPC得标志
+     * 0000 0000 0000 0000	--> 2进制的第一位数表示请求还是响应 0为请求
+     * 0000 0000 0000 0001	--> 2进制的第一位数表示请求还是响应 1为响应
+     * 0000 0000 0000 0010	--> 2进制的第二位数表示是否为单向 0表示普通请求 1为单向请求
      */
     private int flag = 0;
     /**
@@ -113,13 +120,21 @@ public class RemotingCommand {
     private String remark;
     /**
      * 请求自定义扩展信息	|||  响应自定义扩展信息
+     * 存放本次RPC通信中所有的extFeilds，extFeilds其实就可以理解成本次通信CommandCustomHeader实现Map存储格式
      */
     private HashMap<String, String> extFields;
+
+    /**
+     * 包头数据，注意transient标记，不会被序列化
+     */
     private transient CommandCustomHeader customHeader;
 
+    /**
+     * 序列化的方式，JSON 或者 ROCKETMQ
+     */
     private SerializeType serializeTypeCurrentRPC = serializeTypeConfigInThisServer;
 
-    /*****消息头***/
+    /*****body data 数据包数据 不序列化***/
     private transient byte[] body;
 
     /**********消息格式****end*************************************************************/
@@ -183,16 +198,31 @@ public class RemotingCommand {
         return decode(byteBuffer);
     }
 
+    /**
+     * 将协议 <header length> <header data> <body data> 转化为 RemotingCommand
+     * 协议 <length> 部分被NettyDecoder 去掉
+     *
+     * @param array
+     * @return
+     */
     public static RemotingCommand decode(final ByteBuffer byteBuffer) {
+        //获取byteBuffer 总长度 表示 <header length> <header data> <body data> 占用的字节总数
         int length = byteBuffer.limit();
+
+        //获取前面4个字节 <header length> 的整数表示 整数的第1个字节表示序列化类型，后面3个字节表示<header data>长度
         int oriHeaderLen = byteBuffer.getInt();
+
+        //通过<header length> 整数【4个字节表示】 第1个字节获得<header data>长度
         int headerLength = getHeaderLength(oriHeaderLen);
 
+        //获取<header data> 字节数组
         byte[] headerData = new byte[headerLength];
         byteBuffer.get(headerData);
 
+        //通过<header length> 整数【4个字节表示】 第1个字节获得<header data>序列化方式
         RemotingCommand cmd = headerDecode(headerData, getProtocolType(oriHeaderLen));
 
+        //获取body
         int bodyLength = length - 4 - headerLength;
         byte[] bodyData = null;
         if (bodyLength > 0) {
@@ -371,19 +401,24 @@ public class RemotingCommand {
     }
 
     public ByteBuffer encode() {
-        // 1> 消息总长度
+        // 1> <header length> 占用4个字节
         int length = 4;
 
         // 2> header data length
+        // RemotingCommand序列化为2进制数组 表示协议中的 <header data>.
+        // 获取2进制数组的长度累加到length length 表示 <header length> <header data> 占用的总字节
         byte[] headerData = this.headerEncode();
         length += headerData.length;
 
         // 3> body data length
+        //RemotingCommand.body表示协议中<body data>
+        // 获取body的长度累加到length length 表示 <header length> <header data> <body data> 占用的总字节
         if (this.body != null) {
             length += body.length;
         }
 
         //这是因为在消息总长度的计算中没有将存储头部长度的4个字节计算在内
+        //length 表示 <header length> <header data> <body data> 占用的总字节
         ByteBuffer result = ByteBuffer.allocate(4 + length);
 
         // length

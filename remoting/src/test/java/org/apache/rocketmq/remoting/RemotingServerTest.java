@@ -111,7 +111,7 @@ public class RemotingServerTest {
         requestHeader.setCount(1);
         requestHeader.setMessageTitle("Welcome");
         RemotingCommand request = RemotingCommand.createRequestCommand(0, requestHeader);
-        RemotingCommand response = remotingClient.invokeSync("localhost:8888", request, 1000 * 3);
+        RemotingCommand response = remotingClient.invokeSync("localhost:8888", request, 1000 * 30);
         assertTrue(response != null);
         assertThat(response.getLanguage()).isEqualTo(LanguageCode.JAVA);
         assertThat(response.getExtFields()).hasSize(2);
