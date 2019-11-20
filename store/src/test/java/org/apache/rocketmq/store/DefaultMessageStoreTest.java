@@ -105,7 +105,9 @@ public class DefaultMessageStoreTest {
 
     private MessageStore buildMessageStore() throws Exception {
         MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
+        //ComitLog 文件大小，10kb
         messageStoreConfig.setMappedFileSizeCommitLog( 1024 * 10);
+        //ComsumeQueue 文件大小 256
         messageStoreConfig.setMappedFileSizeConsumeQueue(256);
         messageStoreConfig.setMaxHashSlotNum(10);
         messageStoreConfig.setMaxIndexNum(100 * 2);
