@@ -35,6 +35,8 @@ public class NamesrvConfig {
     private String configStorePath = System.getProperty("user.home") + File.separator + "namesrv" + File.separator + "namesrv.properties";
     private String productEnvName = "center";
     private boolean clusterTest = false;
+
+    /**是否开启顺序消息，默认false*/
     private boolean orderMessageEnable = false;
 
     public boolean isOrderMessageEnable() {

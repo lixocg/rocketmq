@@ -46,8 +46,18 @@ public class NamesrvController {
 
     private final NettyServerConfig nettyServerConfig;
 
+    /**
+     * NameServer 定时任务执行线程池，默认定时执行两个任务：
+     *
+     * 任务1、每隔 10s 扫描 broker ,维护当前存活的Broker信息。
+     * 任务2、每隔 10s 打印KVConfig 信息。
+     */
     private final ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(new ThreadFactoryImpl(
         "NSScheduledThread"));
+
+    /**
+     * 读取或变更NameServer的配置属性，加载 NamesrvConfig 中配置的配置文件到内存，此类一个亮点就是使用轻量级的非线程安全容器，再结合读写锁对资源读写进行保护。尽最大程度提高线程的并发度
+     */
     private final KVConfigManager kvConfigManager;
     private final RouteInfoManager routeInfoManager;
 
@@ -79,9 +89,13 @@ public class NamesrvController {
 
         this.remotingServer = new NettyRemotingServer(this.nettyServerConfig, this.brokerHousekeepingService);
 
+        /**
+         * 创建一个线程容量为 serverWorkerThreads 的固定长度的线程池，该线程池供 DefaultRequestProcessor 类使用，实现具体的默认的请求命令处理。
+         */
         this.remotingExecutor =
             Executors.newFixedThreadPool(nettyServerConfig.getServerWorkerThreads(), new ThreadFactoryImpl("RemotingExecutorThread_"));
 
+        /**就是将 DefaultRequestProcessor 与代码@1创建的线程池绑定在一起*/
         this.registerProcessor();
 
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {

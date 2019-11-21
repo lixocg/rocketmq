@@ -18,6 +18,13 @@ package org.apache.rocketmq.remoting.netty;
 
 public class NettyServerConfig implements Cloneable {
     private int listenPort = 8888;
+
+    /**
+     * 业务线程池的线程个数，RocketMQ 按任务类型，每个任务类型会拥有一个专门的线程池，比如发送消息，消费消息，另外再加一个其他线程池（默认的业务线程池）。
+     * 默认业务线程池，采用 fixed 类型，其线程名称：RemotingExecutorThread_。
+     * <p>
+     * 作用范围：该参数目前主要用于 NameServer 的默认业务线程池，处理诸如 broker、producer,consume 与 NameServer 的所有交互命令。
+     */
     private int serverWorkerThreads = 8;
     private int serverCallbackExecutorThreads = 0;
     private int serverSelectorThreads = 3;
@@ -31,8 +38,8 @@ public class NettyServerConfig implements Cloneable {
 
     /**
      * make make install
-     *
-     *
+     * <p>
+     * <p>
      * ../glibc-2.10.1/configure \ --prefix=/usr \ --with-headers=/usr/include \
      * --host=x86_64-linux-gnu \ --build=x86_64-pc-linux-gnu \ --without-gd
      */
