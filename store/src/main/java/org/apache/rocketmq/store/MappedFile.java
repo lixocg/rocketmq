@@ -43,36 +43,92 @@ import org.apache.rocketmq.store.config.FlushDiskType;
 import org.apache.rocketmq.store.util.LibC;
 import sun.nio.ch.DirectBuffer;
 
+/**
+ * CommitLog文件，即内存映射文件
+ */
 public class MappedFile extends ReferenceResource {
+    /**
+     * 内存页大小，默认4k
+     */
     public static final int OS_PAGE_SIZE = 1024 * 4;
+
     protected static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
 
-    /***写入消息累计长度*/
+    /***JVM中映射(mmap)的虚拟内存总大小，初始值为0**/
     private static final AtomicLong TOTAL_MAPPED_VIRTUAL_MEMORY = new AtomicLong(0);
 
     /**
-     * MappedFile文件总数量
+     * 映射文件个数，初始值为0
      */
     private static final AtomicInteger TOTAL_MAPPED_FILES = new AtomicInteger(0);
 
     /**
-     * 写入位置
+     * 当前写入的位置，当值等于fileSize时代表文件写满了，注意：这里记录不是真正刷入磁盘的位置，而是写入到buffer的位置，初始值为0
      */
     protected final AtomicInteger wrotePosition = new AtomicInteger(0);
+
+    /**
+     * 当前提交位置，所谓提交位置就是将writeBuffer的脏数据写到fileChannel，初始值为0
+     */
     protected final AtomicInteger committedPosition = new AtomicInteger(0);
+
+    /**
+     * 当前刷盘位置，初始值为0
+     */
     private final AtomicInteger flushedPosition = new AtomicInteger(0);
+
+    /**
+     * 映射文件大小，参数org.apache.rocketmq.store.config.MessageStoreConfig#mappedFileSizeCommitLog,默认1G
+     */
     protected int fileSize;
+
+    /**
+     * 文件通道，以支持文件的随机读写，通过fileChannel将此通道的文件趋于直接映射到内存中，对应的内存映射为 mappedByteBuffer，
+     * 可以直接通过mappedByteBuffer读写CommitLog文件
+     */
     protected FileChannel fileChannel;
+
     /**
      * Message will put to here first, and then reput to FileChannel if writeBuffer is not null.
+     * 从 transientStorePool 中获取，消息先写入该buffer，然后在写入到fileChannel，可能为null。
+     * 只有仅当org.apache.rocketmq.store.config.MessageStoreConfig#transientStorePoolEnable 为true，刷盘策略为异步刷盘，且
+     * slave为主节点才启用transientStorePool
      */
     protected ByteBuffer writeBuffer = null;
+
+    /**
+     * 堆外存储池
+     */
     protected TransientStorePool transientStorePool = null;
+
+    /**
+     * 文件全路径名
+     */
     private String fileName;
+
+    /**
+     * CommitLog文件起始偏移量，起始就是文件名称，一般为20为数，代表这个文件开始的offset
+     */
     private long fileFromOffset;
+
+    /**
+     * CommitLog文件对象
+     */
     private File file;
+
+    /**
+     * fileChannel 内存映射文件对象
+     */
     private MappedByteBuffer mappedByteBuffer;
+
+    /**
+     * 最后一次写入消息的时间戳
+     */
     private volatile long storeTimestamp = 0;
+
+    /**
+     * 标记该映射文件是不是队列中创建的第一个映射文件
+     */
     private boolean firstCreateInQueue = false;
 
     public MappedFile() {
@@ -216,11 +272,18 @@ public class MappedFile extends ReferenceResource {
         int currentPos = this.wrotePosition.get();
 
         if (currentPos < this.fileSize) {
-
-            /**这个Buffer和同步/异步刷盘相关，异步刷盘有两种刷盘方式可供选择*/
+            /**
+             * 两种消息写入方式：
+             * writeBuffer!=null条件  --> transientStorePoolEnable = true，即 刷盘策略为异步刷盘，且 slave为主节点才使用transientStorePool
+             *
+             * writeBuffer 和 mappedByteBuffer 的position始终未0，而limit始终等于capacity
+             * slice 是根据position和limit来生成新的byteBuffer，且和原buffer共享内存
+             */
             ByteBuffer byteBuffer = writeBuffer != null ? writeBuffer.slice() : this.mappedByteBuffer.slice();
             byteBuffer.position(currentPos);
+
             AppendMessageResult result;
+            //针对不同的消息类型，分别执行不同的追加消息追加逻辑
             if (messageExt instanceof MessageExtBrokerInner) {
                 result = cb.doAppend(this.getFileFromOffset(), byteBuffer, this.fileSize - currentPos, (MessageExtBrokerInner) messageExt);
             } else if (messageExt instanceof MessageExtBatch) {
@@ -228,9 +291,11 @@ public class MappedFile extends ReferenceResource {
             } else {
                 return new AppendMessageResult(AppendMessageStatus.UNKNOWN_ERROR);
             }
-            /**刷新写入位置*/
+
+            /**修改写入位置*/
             this.wrotePosition.addAndGet(result.getWroteBytes());
             this.storeTimestamp = result.getStoreTimestamp();
+
             return result;
         }
         log.error("MappedFile.appendMessage return null, wrotePosition: {} fileSize: {}", currentPos, this.fileSize);
@@ -575,7 +640,6 @@ public class MappedFile extends ReferenceResource {
 
     /**
      * 将当前映射文件全部的地址空间锁定在物理存储中，防止其被交换到swap空间。
-     *
      */
     public void mlock() {
         final long beginTime = System.currentTimeMillis();
