@@ -86,9 +86,18 @@ public class UtilAll {
     }
 
     public static String offset2FileName(final long offset) {
+        //返回当前默认语言环境的用用数值格式
         final NumberFormat nf = NumberFormat.getInstance();
+        //这是数值的整数部分所允许的最大位数
         nf.setMinimumIntegerDigits(20);
+        //这是数值的整数部分所允许的最小位数
         nf.setMaximumFractionDigits(0);
+        /*
+         *设置此格式是否使用分组。
+         * true为此格式使用分组。
+         * 例如：在English语言环境中，如果使用了分组，则数1234567，将被格式化为 1,234,567
+         * 组分隔符以及每个组大小是与语言环境相关的，有NumberFormat子类确定
+         */
         nf.setGroupingUsed(false);
         return nf.format(offset);
     }

@@ -586,6 +586,7 @@ public class CommitLog {
 
 
         /**putMessage会有多个工作者线程并行处理，需要上锁，可以在broker配置是自旋锁还是可重入锁*/
+        /**依赖于messageStoreConfig#useReentrantLockWhenPutMessage配置*/
         putMessageLock.lock(); //spin or ReentrantLock ,depending on store config
         try {
             long beginLockTimestamp = this.defaultMessageStore.getSystemClock().now();
@@ -596,7 +597,7 @@ public class CommitLog {
             /**拿到锁之后，在设置一次，这样可以做到全局有序*/
             msg.setStoreTimestamp(beginLockTimestamp);
 
-            /**最近一个CommitLog最写满了，在创建一个新的*/
+            /**还没有映射文件(broker刚启动，但没来得及load)或者最近一个CommitLog最写满了，在创建一个新的*/
             if (null == mappedFile || mappedFile.isFull()) {
                 mappedFile = this.mappedFileQueue.getLastMappedFile(0); // Mark: NewFile may be cause noise
             }
