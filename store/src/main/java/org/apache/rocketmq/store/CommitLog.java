@@ -535,8 +535,6 @@ public class CommitLog {
     }
 
     public PutMessageResult putMessage(final MessageExtBrokerInner msg) {
-        /**继续构造broker内部生成的message*/
-
         /**message存储到broker的时间*/
         msg.setStoreTimestamp(System.currentTimeMillis());
         // Set the message body BODY CRC (consider the most appropriate setting
@@ -592,8 +590,6 @@ public class CommitLog {
             long beginLockTimestamp = this.defaultMessageStore.getSystemClock().now();
             this.beginTimeInLock = beginLockTimestamp;
 
-            // Here settings are stored timestamp, in order to ensure an orderly
-            // global
             /**拿到锁之后，在设置一次，这样可以做到全局有序*/
             msg.setStoreTimestamp(beginLockTimestamp);
 

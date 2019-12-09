@@ -233,10 +233,10 @@ public class MappedFileQueue {
 
         //创建新的映射文件
         if (createOffset != -1 && needCreate) {
-            //构造CommitLog文件名称
-
-            /**rocketMq为了提高性能，在创建新的映射文件时，会发起两次创建请求，一个是本身需要创建的映射文件请求，另一个是需要创建
-            映射文件的下一个映射文件的请求**/
+            /** NOTICE:
+             * rocketMq为了提高性能，在创建新的映射文件时，会发起两次创建请求，一个是本身需要创建的映射文件请求，另一个是需要创建
+             * 映射文件的下一个映射文件的请求
+             **/
 
             //需要创建的映射文件路径
             String nextFilePath = this.storePath + File.separator + UtilAll.offset2FileName(createOffset);
@@ -276,6 +276,12 @@ public class MappedFileQueue {
         return mappedFileLast;
     }
 
+    /**
+     * 创建新的CommitLog文件
+     *
+     * @param startOffset
+     * @return
+     */
     public MappedFile getLastMappedFile(final long startOffset) {
         return getLastMappedFile(startOffset, true);
     }

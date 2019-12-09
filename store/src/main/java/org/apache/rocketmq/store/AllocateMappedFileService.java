@@ -58,11 +58,11 @@ public class AllocateMappedFileService extends ServiceThread {
     }
 
     /**
-     * 提交两个创建映射文件请求，路径分别为nextFilePath和nextNextFilePath
+     * 提交两个创建映射文件请求，路径分别为 nextFilePath 和 nextNextFilePath
      * 并等待路径为 nextFilePath 所对应的映射文件创建完成，nextNextFilePath所对应的的映射文件则不必等待创建完成
      *
-     * @param nextFilePath
-     * @param nextNextFilePath
+     * @param nextFilePath     当前需要创建的内存映射文件
+     * @param nextNextFilePath 下一个内存映射文件
      * @param fileSize         CommitLog文件大小
      * @return
      */
@@ -71,7 +71,7 @@ public class AllocateMappedFileService extends ServiceThread {
         int canSubmitRequests = 2;
 
         /**
-         * 仅当transientStorePoolEnable为true，FlushDiskType为ASYNC_FLUSH，并且broker为主节点，才启用transientStorePool。
+         * 仅当transientStorePoolEnable为true(FlushDiskType为ASYNC_FLUSH，并且broker为主节点，才启用transientStorePool)
          * 同时在启动快速失败策略时，计算 transientStorePool 中剩余的buffer数量减去requestQueue中待分配的数量后，剩余的buffer数量，
          * 如果小于等于0时，则快速失败
          */
@@ -162,6 +162,7 @@ public class AllocateMappedFileService extends ServiceThread {
         }
     }
 
+    @Override
     public void run() {
         log.info(this.getServiceName() + " service started");
 
@@ -201,7 +202,7 @@ public class AllocateMappedFileService extends ServiceThread {
 
                 MappedFile mappedFile;
 
-                //仅当transientStorePoolEnable为true，FlushDiskType为ASYNC_FLUSH，并且broker为主节点，才启用transientStorePool。
+                //仅当transientStorePoolEnable为true(FlushDiskType为ASYNC_FLUSH，并且broker为主节点),才启用transientStorePool。
                 if (messageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
                     try {
                         mappedFile = ServiceLoader.load(MappedFile.class).iterator().next();

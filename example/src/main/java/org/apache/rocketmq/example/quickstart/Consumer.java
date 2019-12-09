@@ -59,6 +59,8 @@ public class Consumer {
          */
         consumer.subscribe("TopicTest", "*");
 
+        consumer.setNamesrvAddr("127.0.0.1:9876");
+
         /*
          *  Register callback to execute on arrival of messages fetched from brokers.
          */
