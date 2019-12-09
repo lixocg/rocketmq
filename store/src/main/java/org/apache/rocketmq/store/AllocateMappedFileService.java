@@ -205,6 +205,7 @@ public class AllocateMappedFileService extends ServiceThread {
                 //仅当transientStorePoolEnable为true(FlushDiskType为ASYNC_FLUSH，并且broker为主节点),才启用transientStorePool。
                 if (messageStore.getMessageStoreConfig().isTransientStorePoolEnable()) {
                     try {
+                        //没找到spi
                         mappedFile = ServiceLoader.load(MappedFile.class).iterator().next();
                         mappedFile.init(req.getFilePath(), req.getFileSize(), messageStore.getTransientStorePool());
                     } catch (RuntimeException e) {
