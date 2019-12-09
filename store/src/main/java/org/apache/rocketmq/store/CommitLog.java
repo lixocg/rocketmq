@@ -1247,6 +1247,7 @@ public class CommitLog {
 
         /**
          * 追加写入单条消息
+         * 只是将消息追加写入到内存中，还未到磁盘
          *
          * @param fileFromOffset commitLog文件的起始偏移量。起始就是文件名称，一般为20位数，代表这个文件开始时的offset
          * @param byteBuffer     写消息缓冲区( MappedFile#writeBuffer OR MappedFile#mappedByteBuffer)
@@ -1313,7 +1314,7 @@ public class CommitLog {
                 return new AppendMessageResult(AppendMessageStatus.PROPERTIES_SIZE_EXCEEDED);
             }
 
-            /**序列胡topic*/
+            /**序列化topic*/
             final byte[] topicData = msgInner.getTopic().getBytes(MessageDecoder.CHARSET_UTF8);
             final int topicLength = topicData.length;
 
