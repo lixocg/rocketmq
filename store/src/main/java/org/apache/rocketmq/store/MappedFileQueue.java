@@ -30,6 +30,9 @@ import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 
+/**
+ * MappedFile文件管理容器
+ */
 public class MappedFileQueue {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
     private static final InternalLogger LOG_ERROR = InternalLoggerFactory.getLogger(LoggerName.STORE_ERROR_LOGGER_NAME);
@@ -38,6 +41,9 @@ public class MappedFileQueue {
 
     private final String storePath;
 
+    /**
+     * 单个MappedFile文件大小
+     */
     private final int mappedFileSize;
 
     /**
@@ -45,9 +51,19 @@ public class MappedFileQueue {
      */
     private final CopyOnWriteArrayList<MappedFile> mappedFiles = new CopyOnWriteArrayList<MappedFile>();
 
+    /**
+     * 创建MappedFile文件服务线程类
+     */
     private final AllocateMappedFileService allocateMappedFileService;
 
+    /**
+     * 当前刷盘指针，表示该指针之前数据全部持久化到磁盘
+     */
     private long flushedWhere = 0;
+
+    /**
+     * 当前数据提交指针，内存中ByteBuffer当前的写指针，该指针大于等于flushedWhere
+     */
     private long committedWhere = 0;
 
     private volatile long storeTimestamp = 0;
