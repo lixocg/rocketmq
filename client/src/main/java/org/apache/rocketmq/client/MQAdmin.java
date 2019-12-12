@@ -27,22 +27,23 @@ import org.apache.rocketmq.remoting.exception.RemotingException;
  */
 public interface MQAdmin {
     /**
-     * Creates an topic
-     *
-     * @param key accesskey
-     * @param newTopic topic name
-     * @param queueNum topic's queue number
+     * 创建topic
+     * @param key 用于消息检索，可以与newTopic相同
+     * @param newTopic topic名称
+     * @param queueNum 队列数量
+     * @throws MQClientException
      */
     void createTopic(final String key, final String newTopic, final int queueNum)
         throws MQClientException;
 
     /**
-     * Creates an topic
      *
-     * @param key accesskey
-     * @param newTopic topic name
-     * @param queueNum topic's queue number
-     * @param topicSysFlag topic system flag
+     * 创建topic
+     * @param key 用于消息检索，可以与newTopic相同
+     * @param newTopic topic名称
+     * @param queueNum 队列数量
+     * @param topicSysFlag 主题系统标签，默认为0，参考：
+     * @throws MQClientException
      */
     void createTopic(String key, String newTopic, int queueNum, int topicSysFlag)
         throws MQClientException;
@@ -50,7 +51,7 @@ public interface MQAdmin {
     /**
      * Gets the message queue offset according to some time in milliseconds<br>
      * be cautious to call because of more IO overhead
-     *
+     * 根据时间戳从队列中查找其偏移量
      * @param mq Instance of MessageQueue
      * @param timestamp from when in milliseconds.
      * @return offset
@@ -58,7 +59,7 @@ public interface MQAdmin {
     long searchOffset(final MessageQueue mq, final long timestamp) throws MQClientException;
 
     /**
-     * Gets the max offset
+     * 获取该队列中最大物理偏移量
      *
      * @param mq Instance of MessageQueue
      * @return the max offset
@@ -66,7 +67,7 @@ public interface MQAdmin {
     long maxOffset(final MessageQueue mq) throws MQClientException;
 
     /**
-     * Gets the minimum offset
+     * 获取该队列中最小物理偏移量
      *
      * @param mq Instance of MessageQueue
      * @return the minimum offset
@@ -91,13 +92,13 @@ public interface MQAdmin {
         InterruptedException, MQClientException;
 
     /**
-     * Query messages
+     * 查询消息
      *
      * @param topic message topic
      * @param key message key index word
-     * @param maxNum max message number
-     * @param begin from when
-     * @param end to when
+     * @param maxNum max message number 本次最多去除多少条消息
+     * @param begin from when 开始时间
+     * @param end to when 结束时间
      * @return Instance of QueryResult
      */
     QueryResult queryMessage(final String topic, final String key, final int maxNum, final long begin,

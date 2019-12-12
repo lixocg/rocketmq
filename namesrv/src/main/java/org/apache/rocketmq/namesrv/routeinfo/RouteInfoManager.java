@@ -54,7 +54,10 @@ public class RouteInfoManager {
     /**读写锁，用来保护非线程安全容器 HashMap*/
     private final ReadWriteLock lock = new ReentrantReadWriteLock();
 
-    /**topicQueueTable，主题与队列关系，记录一个主题的队列分布在哪些Broker上，每个Broker上存在该主题的队列个数。QueueData队列描述信息*/
+    /**topicQueueTable，主题与队列关系，记录一个主题的队列分布在哪些Broker上，每个Broker上存在该主题的队列个数。
+     * QueueData队列描述信息
+     * 用于消息发送时做负载均衡
+     * */
     private final HashMap<String/* topic */, List<QueueData>> topicQueueTable;
 
     /**brokerAddrTable,所有 Broker 信息，使用 brokerName 当key, BrokerData 信息描述每一个 broker 信息*/

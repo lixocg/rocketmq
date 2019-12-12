@@ -27,6 +27,10 @@ public class Message implements Serializable {
 
     private String topic;
     private int flag;
+
+    /**
+     * 消息属性，参考：org.apache.rocketmq.common.message.MessageConst
+     */
     private Map<String, String> properties;
     private byte[] body;
     private String transactionId;
