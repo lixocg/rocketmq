@@ -69,11 +69,12 @@ public class MappedFile extends ReferenceResource {
 
     /**
      * 当前提交位置，所谓提交位置就是将writeBuffer的脏数据写到fileChannel，初始值为0
+     * 当前文件的提交指针，如果开启了transientStorePollEnable，则数据会先存储到 transientStorePoll中，然后提交到内存映射ByteBuffer中，再刷盘
      */
     protected final AtomicInteger committedPosition = new AtomicInteger(0);
 
     /**
-     * 当前刷盘位置，初始值为0
+     * 当前刷盘位置，初始值为0，该指针之前数据持久化到磁盘
      */
     private final AtomicInteger flushedPosition = new AtomicInteger(0);
 
@@ -97,7 +98,7 @@ public class MappedFile extends ReferenceResource {
     protected ByteBuffer writeBuffer = null;
 
     /**
-     * 堆外存储池
+     * 堆外内存池
      */
     protected TransientStorePool transientStorePool = null;
 
@@ -133,6 +134,13 @@ public class MappedFile extends ReferenceResource {
 
     public MappedFile() {
     }
+
+    /*
+     * MappedFile 初始化
+     * 根据是否启用 transientStorePoolEnable 分为两种情况：
+     * transientStorePoolEnable = true，先存储到堆外内存，然后通过Commit线程将数据提交到内存映射Buffer中，在通过Flush 线程
+     * 将内存映射Buffer中的数据持久化到磁盘
+     */
 
     public MappedFile(final String fileName, final int fileSize) throws IOException {
         init(fileName, fileSize);
@@ -210,6 +218,7 @@ public class MappedFile extends ReferenceResource {
     public void init(final String fileName, final int fileSize,
                      final TransientStorePool transientStorePool) throws IOException {
         init(fileName, fileSize);
+        // 初始化 writeBuffer，该Buffer来自transientStorePool
         this.writeBuffer = transientStorePool.borrowBuffer();
         this.transientStorePool = transientStorePool;
     }
@@ -347,6 +356,7 @@ public class MappedFile extends ReferenceResource {
     }
 
     /**
+     * 将内存中数据永久写到磁盘
      * @return The current flushed position
      */
     public int flush(final int flushLeastPages) {
@@ -375,6 +385,12 @@ public class MappedFile extends ReferenceResource {
         return this.getFlushedPosition();
     }
 
+    /**
+     * 执行提交操作,将writeBuffer中可提交数据提交到文件通道fileChannel中
+     * commitLeastPages为本次提交的最小页数，如果带提交数据不满足commitLeastPages ，则不执行提交操作，待下次提交
+     * @param commitLeastPages
+     * @return
+     */
     public int commit(final int commitLeastPages) {
         if (writeBuffer == null) {
             //no need to commit data to file channel, so just regard wrotePosition as committedPosition.
@@ -391,6 +407,7 @@ public class MappedFile extends ReferenceResource {
 
         // All dirty data has been committed to FileChannel.
         if (writeBuffer != null && this.transientStorePool != null && this.fileSize == this.committedPosition.get()) {
+            //提交完了，归还堆外内存
             this.transientStorePool.returnBuffer(writeBuffer);
             this.writeBuffer = null;
         }
@@ -417,7 +434,9 @@ public class MappedFile extends ReferenceResource {
     }
 
     private boolean isAbleToFlush(final int flushLeastPages) {
+        //上次刷盘位置指针
         int flush = this.flushedPosition.get();
+        //当前数据指针
         int write = getReadPosition();
 
         if (this.isFull()) {
@@ -432,7 +451,9 @@ public class MappedFile extends ReferenceResource {
     }
 
     protected boolean isAbleToCommit(final int commitLeastPages) {
+        //上次提交数据指针
         int flush = this.committedPosition.get();
+        //当前提交数据指针
         int write = this.wrotePosition.get();
 
         if (this.isFull()) {
@@ -443,6 +464,7 @@ public class MappedFile extends ReferenceResource {
             return ((write / OS_PAGE_SIZE) - (flush / OS_PAGE_SIZE)) >= commitLeastPages;
         }
 
+        //commitLeastPages <= 0,有数据就提交
         return write > flush;
     }
 
