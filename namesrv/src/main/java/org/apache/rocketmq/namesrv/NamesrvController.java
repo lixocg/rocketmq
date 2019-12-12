@@ -97,14 +97,17 @@ public class NamesrvController {
 
         this.registerProcessor();
 
-        this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+        /*心跳检测定时任务***/
 
+        //每隔10s扫描一次broker，移除处于不激活状态的broker
+        this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
                 NamesrvController.this.routeInfoManager.scanNotActiveBroker();
             }
         }, 5, 10, TimeUnit.SECONDS);
 
+        //每隔10打印一次kv配置
         this.scheduledExecutorService.scheduleAtFixedRate(new Runnable() {
 
             @Override

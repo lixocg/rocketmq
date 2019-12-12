@@ -17,6 +17,9 @@
 package org.apache.rocketmq.remoting.netty;
 
 public class NettyServerConfig implements Cloneable {
+    /**
+     * NameSrv 监听端口，该默认值会被初始化为9876
+     */
     private int listenPort = 8888;
 
     /**
@@ -26,17 +29,51 @@ public class NettyServerConfig implements Cloneable {
      * 作用范围：该参数目前主要用于 NameServer 的默认业务线程池，处理诸如 broker、producer,consume 与 NameServer 的所有交互命令。
      */
     private int serverWorkerThreads = 8;
+
+    /**
+     * netty public 任务线程池线程个数，netty网络设计，会根据业务类型创建不同的线程池，比如处理消息发送、消息消费、心跳检测等。
+     * 如果该该业务类型(RequestCode)未注册线程池，则由public线程池处理
+     */
     private int serverCallbackExecutorThreads = 0;
+
+    /**
+     * IO线程池线程个数，主要NameServer、Broker端解析请求、返回相应的线程个数，这类线程主要是处理网络请求的，解析请求包，然后转发到业务线程池完成具体的
+     * 业务操作，然后再将结果返回给调用方。
+     */
     private int serverSelectorThreads = 3;
+
+    /**
+     * send oneway 消息请求并发度（Broker端参数）
+     */
     private int serverOnewaySemaphoreValue = 256;
+
+    /**
+     * 异步消息最大并发度(Broker端)
+     */
     private int serverAsyncSemaphoreValue = 64;
+
+    /**
+     * 网络连接最大空闲时间，默认120s，如果连接空闲时间超过该参数设定的值，连接将被关闭
+     */
     private int serverChannelMaxIdleTimeSeconds = 120;
 
+    /**
+     * 网络socket发送缓冲区大小，默认64k
+     */
     private int serverSocketSndBufSize = NettySystemConfig.socketSndbufSize;
+
+    /**
+     * 网络socket接受缓冲区大小，默认64k
+     */
     private int serverSocketRcvBufSize = NettySystemConfig.socketRcvbufSize;
+
+    /**
+     * ByteBuffer是否开启缓存，建议开启
+     */
     private boolean serverPooledByteBufAllocatorEnable = true;
 
     /**
+     * 是否启用Epoll IO模型，Linux建议开启
      * make make install
      * <p>
      * <p>

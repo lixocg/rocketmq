@@ -31,9 +31,16 @@ public class NamesrvConfig {
 
 //    private String rocketmqHome = System.getProperty(MixAll.ROCKETMQ_HOME_PROPERTY, System.getenv(MixAll.ROCKETMQ_HOME_ENV));
     private String rocketmqHome = System.getProperty(MixAll.ROCKETMQ_HOME_PROPERTY, "/Users/lixiongcheng/rocketmq");
+
+    /**
+     * 存储KV配置属性的持久化路径
+     */
     private String kvConfigPath = System.getProperty("user.home") + File.separator + "namesrv" + File.separator + "kvConfig.json";
+
     private String configStorePath = System.getProperty("user.home") + File.separator + "namesrv" + File.separator + "namesrv.properties";
+
     private String productEnvName = "center";
+
     private boolean clusterTest = false;
 
     /**是否开启顺序消息，默认false*/
