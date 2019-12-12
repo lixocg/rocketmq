@@ -1512,6 +1512,9 @@ public class DefaultMessageStore implements MessageStore {
         }, 6, TimeUnit.SECONDS);
     }
 
+    /**
+     * 构建消息消费队列ConsumeQueue文件
+     */
     class CommitLogDispatcherBuildConsumeQueue implements CommitLogDispatcher {
 
         @Override
@@ -1529,6 +1532,9 @@ public class DefaultMessageStore implements MessageStore {
         }
     }
 
+    /**
+     * 构建IndexFile文件
+     */
     class CommitLogDispatcherBuildIndex implements CommitLogDispatcher {
 
         @Override
@@ -1808,8 +1814,14 @@ public class DefaultMessageStore implements MessageStore {
         }
     }
 
+    /**
+     * 准实时转发CommitLog文件更新线程，相应的任务处理器根据转发的消息及时更新ConsumeQueue、IndexFile文件
+     */
     class ReputMessageService extends ServiceThread {
 
+        /**
+         * 告诉ReputMessageService线程从哪个物理偏移量开始转发消息给ConsumeQueue和IndexFile
+         */
         private volatile long reputFromOffset = 0;
 
         public long getReputFromOffset() {
@@ -1845,6 +1857,9 @@ public class DefaultMessageStore implements MessageStore {
             return this.reputFromOffset < DefaultMessageStore.this.commitLog.getMaxOffset();
         }
 
+        /**
+         * 转发CommitLog消息构建ConsumeQueue和IndexFile文件
+         */
         private void doReput() {
             if (this.reputFromOffset < DefaultMessageStore.this.commitLog.getMinOffset()) {
                 log.warn("The reputFromOffset={} is smaller than minPyOffset={}, this usually indicate that the dispatch behind too much and the commitlog has expired.",

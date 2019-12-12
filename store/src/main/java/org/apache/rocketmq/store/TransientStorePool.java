@@ -71,7 +71,7 @@ public class TransientStorePool {
             final long address = ((DirectBuffer) byteBuffer).address();
             Pointer pointer = new Pointer(address);
 
-            //锁定堆外内存，避免被置换到swap区，提高存储性能
+            //锁定堆外内存(JNA方式)，避免被置换到swap区，提高存储性能
             LibC.INSTANCE.mlock(pointer, new NativeLong(fileSize));
 
             availableBuffers.offer(byteBuffer);
