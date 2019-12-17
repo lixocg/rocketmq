@@ -70,6 +70,9 @@ public class Consumer {
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,
                 ConsumeConcurrentlyContext context) {
                 System.out.printf("%s Receive New Messages: %s %n", Thread.currentThread().getName(), msgs);
+                for(int i = 0;i < msgs.size();i++){
+                    System.out.println(new String(msgs.get(i).getBody()));
+                }
 //                return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
                 return ConsumeConcurrentlyStatus.RECONSUME_LATER;
             }

@@ -39,7 +39,7 @@ public class Producer {
 
                 Message msg = new Message("TopicTest" /* Topic */,
                     "TagA" /* Tag */,
-                    ("Hello RocketMQ " + i).getBytes(RemotingHelper.DEFAULT_CHARSET) /* Message body */
+                    ("Hello RocketMQ世纪东方接口设计法术暴击 " + i).getBytes() /* Message body */
                 );
 
                 SendResult sendResult = producer.send(msg);

@@ -53,6 +53,7 @@ public class RemotingServerTest {
             @Override
             public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) {
                 System.out.println("收到客户端消息，addr="+ctx.channel().remoteAddress()+",data="+ JSON.toJSONString(request));
+
                 request.setRemark("Hi " + ctx.channel().remoteAddress());
                 request.setBody("from server".getBytes());
                 ctx.writeAndFlush(request);

@@ -21,6 +21,7 @@
 package org.apache.rocketmq.common.namesrv;
 
 import java.io.File;
+
 import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.constant.LoggerName;
 import org.apache.rocketmq.logging.InternalLogger;
@@ -29,8 +30,9 @@ import org.apache.rocketmq.logging.InternalLoggerFactory;
 public class NamesrvConfig {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.NAMESRV_LOGGER_NAME);
 
-//    private String rocketmqHome = System.getProperty(MixAll.ROCKETMQ_HOME_PROPERTY, System.getenv(MixAll.ROCKETMQ_HOME_ENV));
-    private String rocketmqHome = System.getProperty(MixAll.ROCKETMQ_HOME_PROPERTY, "/Users/lixiongcheng/rocketmq");
+    //    private String rocketmqHome = System.getProperty(MixAll.ROCKETMQ_HOME_PROPERTY, System.getenv(MixAll.ROCKETMQ_HOME_ENV));
+    private String rocketmqHome = System.getProperty(MixAll.ROCKETMQ_HOME_PROPERTY,
+            System.getProperty("user.home") + File.separator + "rocketmq");
 
     /**
      * 存储KV配置属性的持久化路径
@@ -43,7 +45,9 @@ public class NamesrvConfig {
 
     private boolean clusterTest = false;
 
-    /**是否开启顺序消息，默认false*/
+    /**
+     * 是否开启顺序消息，默认false
+     */
     private boolean orderMessageEnable = false;
 
     public boolean isOrderMessageEnable() {
