@@ -19,8 +19,10 @@ package org.apache.rocketmq.remoting;
 
 import com.alibaba.fastjson.JSON;
 import io.netty.channel.ChannelHandlerContext;
+
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+
 import org.apache.rocketmq.remoting.annotation.CFNullable;
 import org.apache.rocketmq.remoting.exception.RemotingCommandException;
 import org.apache.rocketmq.remoting.exception.RemotingConnectException;
@@ -52,7 +54,7 @@ public class RemotingServerTest {
         remotingServer.registerProcessor(0, new NettyRequestProcessor() {
             @Override
             public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) {
-                System.out.println("收到客户端消息，addr="+ctx.channel().remoteAddress()+",data="+ JSON.toJSONString(request));
+                System.out.println("收到客户端消息，addr=" + ctx.channel().remoteAddress() + ",data=" + JSON.toJSONString(request));
                 request.setRemark("Hi " + ctx.channel().remoteAddress());
                 request.setBody("from server".getBytes());
                 ctx.writeAndFlush(request);
@@ -79,7 +81,7 @@ public class RemotingServerTest {
         client.registerProcessor(0, new NettyRequestProcessor() {
             @Override
             public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) throws Exception {
-                System.out.println("收到服务端数据:"+JSON.toJSONString(request));
+                System.out.println("收到服务端数据:" + JSON.toJSONString(request));
                 return request;
             }
 
@@ -87,7 +89,7 @@ public class RemotingServerTest {
             public boolean rejectRequest() {
                 return false;
             }
-        },Executors.newCachedThreadPool());
+        }, Executors.newCachedThreadPool());
         client.start();
         return client;
     }
@@ -106,12 +108,12 @@ public class RemotingServerTest {
 
     @Test
     public void testInvokeSync() throws InterruptedException, RemotingConnectException,
-        RemotingSendRequestException, RemotingTimeoutException {
+            RemotingSendRequestException, RemotingTimeoutException {
         RequestHeader requestHeader = new RequestHeader();
         requestHeader.setCount(1);
         requestHeader.setMessageTitle("Welcome");
         RemotingCommand request = RemotingCommand.createRequestCommand(0, requestHeader);
-        RemotingCommand response = remotingClient.invokeSync("localhost:8888", request, 1000 * 30);
+        RemotingCommand response = remotingClient.invokeSync("localhost:8888", request, 1000 * 300);
         assertTrue(response != null);
         assertThat(response.getLanguage()).isEqualTo(LanguageCode.JAVA);
         assertThat(response.getExtFields()).hasSize(2);
@@ -120,7 +122,7 @@ public class RemotingServerTest {
 
     @Test
     public void testInvokeOneway() throws InterruptedException, RemotingConnectException,
-        RemotingTimeoutException, RemotingTooMuchRequestException, RemotingSendRequestException {
+            RemotingTimeoutException, RemotingTooMuchRequestException, RemotingSendRequestException {
 
         RemotingCommand request = RemotingCommand.createRequestCommand(0, null);
         request.setRemark("messi");
@@ -129,7 +131,7 @@ public class RemotingServerTest {
 
     @Test
     public void testInvokeAsync() throws InterruptedException, RemotingConnectException,
-        RemotingTimeoutException, RemotingTooMuchRequestException, RemotingSendRequestException {
+            RemotingTimeoutException, RemotingTooMuchRequestException, RemotingSendRequestException {
 
         final CountDownLatch latch = new CountDownLatch(1);
         RemotingCommand request = RemotingCommand.createRequestCommand(0, null);
