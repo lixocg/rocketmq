@@ -81,7 +81,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
 
     /**
      * nettyServerConfig 用来封装对 Netty 的配置信息，包括 SendBufSize、RcvBufSize 等。
-     * 最重要的是，添加了 NettyEncoder、NettyDecoder、IdleStateHandler、NettyConnetManageHandler、NettyServerHandler 几个ChannelHandler。
+     * 最重要的是，添加了 NettyEncoder、NettyDecoder、IdleStateHandler、NettyConnectManageHandler、NettyServerHandler 几个ChannelHandler。
      */
     private final NettyServerConfig nettyServerConfig;
 

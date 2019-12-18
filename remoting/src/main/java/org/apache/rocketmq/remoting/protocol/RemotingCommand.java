@@ -515,6 +515,10 @@ public class RemotingCommand {
         this.flag |= bits;
     }
 
+    /**
+     * oneway RPC ： flag第二位为1
+     * @return
+     */
     @JSONField(serialize = false)
     public boolean isOnewayRPC() {
         int bits = 1 << RPC_ONEWAY;
@@ -538,9 +542,14 @@ public class RemotingCommand {
         return RemotingCommandType.REQUEST_COMMAND;
     }
 
+    /**
+     * 是否是响应类型，包括普通响应和单向响应
+     * @return
+     */
     @JSONField(serialize = false)
     public boolean isResponseType() {
         int bits = 1 << RPC_TYPE;
+        // flag 00-普通请求，01-普通响应，10-单向请求，11-单向响应
         return (this.flag & bits) == bits;
     }
 
