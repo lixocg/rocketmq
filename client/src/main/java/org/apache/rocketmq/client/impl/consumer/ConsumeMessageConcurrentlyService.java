@@ -50,14 +50,45 @@ import org.apache.rocketmq.remoting.common.RemotingHelper;
 
 public class ConsumeMessageConcurrentlyService implements ConsumeMessageService {
     private static final InternalLogger log = ClientLogger.getLog();
+
+    /**
+     * 消息推模式实现类
+     */
     private final DefaultMQPushConsumerImpl defaultMQPushConsumerImpl;
+
+    /**
+     * 消费者对象
+     */
     private final DefaultMQPushConsumer defaultMQPushConsumer;
+
+    /**
+     * 并发消息业务事件类
+     */
     private final MessageListenerConcurrently messageListener;
+
+    /**
+     * 消息消费任务队列
+     */
     private final BlockingQueue<Runnable> consumeRequestQueue;
+
+    /**
+     * 消息消费线程池
+     */
     private final ThreadPoolExecutor consumeExecutor;
+
+    /**
+     * 消费组
+     */
     private final String consumerGroup;
 
+    /**
+     * 添加消费任务到consumeExecutor延迟调度器
+     */
     private final ScheduledExecutorService scheduledExecutorService;
+
+    /**
+     * 定时删除过期消息线程池
+     */
     private final ScheduledExecutorService cleanExpireMsgExecutors;
 
     public ConsumeMessageConcurrentlyService(DefaultMQPushConsumerImpl defaultMQPushConsumerImpl,
