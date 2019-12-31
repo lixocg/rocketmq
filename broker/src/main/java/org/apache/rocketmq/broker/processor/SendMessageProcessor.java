@@ -20,6 +20,7 @@ import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 
+import com.alibaba.fastjson.JSON;
 import io.netty.channel.ChannelHandlerContext;
 import org.apache.rocketmq.broker.BrokerController;
 import org.apache.rocketmq.broker.mqtrace.ConsumeMessageContext;
@@ -380,6 +381,7 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             putMessageResult = this.brokerController.getTransactionalMessageService().prepareMessage(msgInner);
         } else {
             /**处理普通和事物消息的commit/rollback消息*/
+            System.out.println("SendMessageProcessor发送消息 msgInner=="+ JSON.toJSONString(msgInner));
             putMessageResult = this.brokerController.getMessageStore().putMessage(msgInner);
         }
         /**返回给客户端*/
