@@ -559,7 +559,9 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                 String lastBrokerName = null == mq ? null : mq.getBrokerName();
 
                 //选择要发送
+                long selectQueueTimeStart = System.currentTimeMillis();
                 MessageQueue mqSelected = this.selectOneMessageQueue(topicPublishInfo, lastBrokerName);
+                System.out.println("选择队列耗时:"+ (System.currentTimeMillis() - selectQueueTimeStart));
                 if (mqSelected != null) {
                     mq = mqSelected;
                     brokersSent[times] = mq.getBrokerName();
@@ -571,6 +573,7 @@ public class DefaultMQProducerImpl implements MQProducerInner {
                         }
                         long costTime = beginTimestampPrev - beginTimestampFirst;
                         if (timeout < costTime) {
+                            System.out.println("设定时间:"+timeout+",耗时:"+costTime+",发送次数:"+times);
                             callTimeout = true;
                             break;
                         }
