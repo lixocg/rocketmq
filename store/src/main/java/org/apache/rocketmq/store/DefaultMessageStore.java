@@ -523,7 +523,18 @@ public class DefaultMessageStore implements MessageStore {
     }
 
     @Override
-    public GetMessageResult getMessage(final String group, final String topic, final int queueId, final long offset,
+    /**
+     * 获取消息
+     * @param group 消费组名称
+     * @param topic 主题名称
+     * @param queueId 队列id
+     * @param offset 待拉取偏移量
+     * @param maxMsgNums 最大拉取消息条数
+     * @param messageFilter 消息过滤器
+     * @return
+     */
+    public GetMessageResult
+    getMessage(final String group, final String topic, final int queueId, final long offset,
                                        final int maxMsgNums,
                                        final MessageFilter messageFilter) {
         if (this.shutdown) {
@@ -539,12 +550,19 @@ public class DefaultMessageStore implements MessageStore {
         long beginTime = this.getSystemClock().now();
 
         GetMessageStatus status = GetMessageStatus.NO_MESSAGE_IN_QUEUE;
+
+        //待查找的队列偏移量
         long nextBeginOffset = offset;
+
+        //当前消息队列最小偏移量
         long minOffset = 0;
+
+        //当前消息队列最大偏移量
         long maxOffset = 0;
 
         GetMessageResult getResult = new GetMessageResult();
 
+        //当前CommitLog文件最大偏移量
         final long maxOffsetPy = this.commitLog.getMaxOffset();
 
         ConsumeQueue consumeQueue = findConsumeQueue(topic, queueId);

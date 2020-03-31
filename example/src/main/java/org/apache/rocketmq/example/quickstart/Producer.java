@@ -28,17 +28,17 @@ import org.apache.rocketmq.remoting.common.RemotingHelper;
 public class Producer {
     public static void main(String[] args) throws MQClientException, InterruptedException {
 
-        DefaultMQProducer producer = new DefaultMQProducer("please_rename_unique_group_name");
+        DefaultMQProducer producer = new DefaultMQProducer("PID_quickstart_producer_group");
 
         producer.setNamesrvAddr("127.0.0.1:9876");
         producer.start();
 
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < 10; i++) {
             try {
 
-                Message msg = new Message("TopicTest" /* Topic */,
-                    "TagA" /* Tag */,
-                    ("Hello RocketMQ世纪东方接口设计法术暴击 " + i).getBytes() /* Message body */
+                Message msg = new Message("MyTopic" /* Topic */,
+                    "TagA||TAGB" /* Tag */,
+                    ("Hello RocketMQ 你好呀！！！！ " + i).getBytes() /* Message body */
                 );
 
                 SendResult sendResult = producer.send(msg);
