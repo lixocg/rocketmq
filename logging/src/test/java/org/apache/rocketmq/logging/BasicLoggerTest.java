@@ -56,7 +56,7 @@ public class BasicLoggerTest {
         return stringBuilder.toString();
     }
 
-    @After
+    //@After
     public void clean() {
         File file = new File(loggingDir);
         if (file.exists()) {

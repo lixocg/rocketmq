@@ -96,7 +96,7 @@ public interface MQAdmin {
      *
      * @param topic message topic
      * @param key message key index word
-     * @param maxNum max message number 本次最多去除多少条消息
+     * @param maxNum max message number 本次最多去查多少条消息
      * @param begin from when 开始时间
      * @param end to when 结束时间
      * @return Instance of QueryResult
