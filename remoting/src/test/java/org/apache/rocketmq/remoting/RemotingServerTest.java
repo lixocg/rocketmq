@@ -57,7 +57,7 @@ public class RemotingServerTest {
                 System.out.println("收到客户端消息，addr="+ctx.channel().remoteAddress()+",data="+ JSON.toJSONString(request));
                 request.setRemark("Hi " + ctx.channel().remoteAddress());
                 request.setBody("from server".getBytes());
-                ctx.writeAndFlush(request);
+//                ctx.writeAndFlush(request);
                 return request;
             }
 
@@ -115,6 +115,7 @@ public class RemotingServerTest {
 
         RemotingCommand request = RemotingCommand.createRequestCommand(0, requestHeader);
         RemotingCommand response = remotingClient.invokeSync("localhost:8888", request, 1000 * 300);
+        System.out.println("单向收到服务器数据:"+JSON.toJSONString(response));
         assertTrue(response != null);
         assertThat(response.getLanguage()).isEqualTo(LanguageCode.JAVA);
         assertThat(response.getExtFields()).hasSize(2);

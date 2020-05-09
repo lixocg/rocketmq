@@ -70,7 +70,7 @@ public class NettyRemotingServer extends NettyRemotingAbstract implements Remoti
     private final ServerBootstrap serverBootstrap;
 
     /**
-     * 用来处理ChannelHandler业务逻辑，workGroup
+     * 用来处理ChannelHandler业务逻辑，workerGroup
      */
     private final EventLoopGroup eventLoopGroupSelector;
 

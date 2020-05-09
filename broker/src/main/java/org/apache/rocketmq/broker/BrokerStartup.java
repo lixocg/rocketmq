@@ -48,6 +48,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.apache.rocketmq.remoting.netty.TlsSystemConfig.TLS_ENABLE;
 
+/**
+ * 本地启动 需要增加vm参数：-Drocketmq.namesrv.addr=127.0.0.1:9876
+ */
 public class BrokerStartup {
     public static Properties properties = null;
     public static CommandLine commandLine = null;
@@ -55,6 +58,7 @@ public class BrokerStartup {
     public static InternalLogger log;
 
     public static void main(String[] args) {
+
         start(createBrokerController(args));
     }
 
@@ -146,6 +150,7 @@ public class BrokerStartup {
                 System.exit(-2);
             }
 
+//            brokerConfig.setNamesrvAddr("127.0.0.1:9876");
             String namesrvAddr = brokerConfig.getNamesrvAddr();
             if (null != namesrvAddr) {
                 try {
