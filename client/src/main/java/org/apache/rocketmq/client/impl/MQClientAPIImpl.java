@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.rocketmq.client.ClientConfig;
 import org.apache.rocketmq.client.consumer.PullCallback;
@@ -427,6 +428,8 @@ public class MQClientAPIImpl {
         }
 
         request.setBody(msg.getBody());
+
+        System.out.println("发送消息协议RemotingCommand:"+ JSON.toJSONString(request));
 
         switch (communicationMode) {
             case ONEWAY:
