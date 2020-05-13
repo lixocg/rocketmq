@@ -16,6 +16,7 @@
  */
 package org.apache.rocketmq.example.quickstart;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendResult;
@@ -36,11 +37,9 @@ public class Producer {
         for (int i = 0; i < 1; i++) {
             try {
 
-                Message msg = new Message("TopicTest" /* Topic */,
-                    "TagA||TAGB" /* Tag */,
-                    ("Hello RocketMQ 你好 " + i).getBytes() /* Message body */
-                );
+                Message msg = new Message("TopicTest", "TagA||TAGB", ("Hello你好" + i).getBytes());
 
+                System.out.println(JSON.toJSONString(msg));
                 SendResult sendResult = producer.send(msg);
 
                 System.out.printf("%s%n", sendResult);
