@@ -522,7 +522,7 @@ public class DefaultMessageStore implements MessageStore {
         return commitLog;
     }
 
-    @Override
+
     /**
      * 获取消息
      * @param group 消费组名称
@@ -533,8 +533,8 @@ public class DefaultMessageStore implements MessageStore {
      * @param messageFilter 消息过滤器
      * @return
      */
-    public GetMessageResult
-    getMessage(final String group, final String topic, final int queueId, final long offset,
+    @Override
+    public GetMessageResult getMessage(final String group, final String topic, final int queueId, final long offset,
                                        final int maxMsgNums,
                                        final MessageFilter messageFilter) {
         if (this.shutdown) {
