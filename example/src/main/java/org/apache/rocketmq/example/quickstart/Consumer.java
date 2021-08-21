@@ -40,6 +40,10 @@ public class Consumer {
 
         consumer.setNamesrvAddr("127.0.0.1:9876");
 
+        consumer.setPullBatchSize(1);
+
+        consumer.setPullInterval(5000);
+
         consumer.registerMessageListener(new MessageListenerConcurrently() {
 
             @Override
