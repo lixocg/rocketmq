@@ -150,7 +150,7 @@ public class BrokerStartup {
                 System.exit(-2);
             }
 
-//            brokerConfig.setNamesrvAddr("127.0.0.1:9876");
+            brokerConfig.setNamesrvAddr("127.0.0.1:9876");
             String namesrvAddr = brokerConfig.getNamesrvAddr();
             if (null != namesrvAddr) {
                 try {

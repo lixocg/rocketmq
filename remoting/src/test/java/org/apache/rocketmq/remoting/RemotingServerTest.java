@@ -54,7 +54,7 @@ public class RemotingServerTest {
         remotingServer.registerProcessor(0, new NettyRequestProcessor() {
             @Override
             public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) {
-                System.out.println("收到客户端消息，addr="+ctx.channel().remoteAddress()+",data="+ JSON.toJSONString(request));
+                System.out.println("收到客户端消息，addr=" + ctx.channel().remoteAddress() + ",data=" + JSON.toJSONString(request));
                 request.setRemark("Hi " + ctx.channel().remoteAddress());
                 request.setBody("from server".getBytes());
 //                ctx.writeAndFlush(request);
@@ -81,7 +81,7 @@ public class RemotingServerTest {
         client.registerProcessor(0, new NettyRequestProcessor() {
             @Override
             public RemotingCommand processRequest(ChannelHandlerContext ctx, RemotingCommand request) throws Exception {
-                System.out.println("收到服务端数据:" + JSON.toJSONString(request));
+                System.out.println("收到服务端数据:" + new String(request.getBody()));
                 return request;
             }
 
@@ -115,7 +115,7 @@ public class RemotingServerTest {
 
         RemotingCommand request = RemotingCommand.createRequestCommand(0, requestHeader);
         RemotingCommand response = remotingClient.invokeSync("localhost:8888", request, 1000 * 300);
-        System.out.println("单向收到服务器数据:"+JSON.toJSONString(response));
+        System.out.println("单向收到服务器数据:" + JSON.toJSONString(response));
         assertTrue(response != null);
         assertThat(response.getLanguage()).isEqualTo(LanguageCode.JAVA);
         assertThat(response.getExtFields()).hasSize(2);
@@ -135,18 +135,22 @@ public class RemotingServerTest {
     public void testInvokeAsync() throws InterruptedException, RemotingConnectException,
             RemotingTimeoutException, RemotingTooMuchRequestException, RemotingSendRequestException {
 
-        final CountDownLatch latch = new CountDownLatch(1);
-        RemotingCommand request = RemotingCommand.createRequestCommand(0, null);
-        request.setRemark("messi");
-        remotingClient.invokeAsync("localhost:8888", request, 1000 * 3, new InvokeCallback() {
-            @Override
-            public void operationComplete(ResponseFuture responseFuture) {
-                latch.countDown();
-                assertTrue(responseFuture != null);
-                assertThat(responseFuture.getResponseCommand().getLanguage()).isEqualTo(LanguageCode.JAVA);
-                assertThat(responseFuture.getResponseCommand().getExtFields()).hasSize(2);
-            }
-        });
+        int loop = 10;
+        final CountDownLatch latch = new CountDownLatch(loop);
+        for (int i = 0; i < loop; i++) {
+            final RemotingCommand request = RemotingCommand.createRequestCommand(0, null);
+            request.setRemark("messi");
+            remotingClient.invokeAsync("localhost:8888", request, 1000 * 30, new InvokeCallback() {
+                @Override
+                public void operationComplete(ResponseFuture responseFuture) {
+                    latch.countDown();
+                    assertTrue(responseFuture != null);
+                    System.out.println(new String(responseFuture.getResponseCommand().getBody()));
+                    assertThat(responseFuture.getResponseCommand().getLanguage()).isEqualTo(LanguageCode.JAVA);
+                    assertThat(responseFuture.getResponseCommand().getExtFields()).hasSize(2);
+                }
+            });
+        }
         latch.await();
     }
 }

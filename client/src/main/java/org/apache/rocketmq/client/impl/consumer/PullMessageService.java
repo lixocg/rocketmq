@@ -23,6 +23,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import org.apache.rocketmq.client.impl.factory.MQClientInstance;
 import org.apache.rocketmq.client.log.ClientLogger;
+import org.apache.rocketmq.common.MixAll;
 import org.apache.rocketmq.common.ServiceThread;
 import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.common.utils.ThreadUtils;
@@ -97,6 +98,8 @@ public class PullMessageService extends ServiceThread {
             try {
                 //从pullRequestQueue中获取一个PullRequest拉取任务，如果pullRequestQueue为空，则线程将阻塞，直到有拉取任务被放入
                 PullRequest pullRequest = this.pullRequestQueue.take();
+
+                MixAll.printLog("--","pullRequest-->{0}",pullRequest);
                 //消息拉取
                 this.pullMessage(pullRequest);
             } catch (InterruptedException ignored) {

@@ -31,7 +31,7 @@ public class PullResult {
     private final long nextBeginOffset;
 
     /**
-     * 消息队列最下偏移量
+     * 消息队列最小偏移量
      */
     private final long minOffset;
 

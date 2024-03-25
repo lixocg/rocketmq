@@ -215,8 +215,6 @@ public abstract class NettyRemotingAbstract {
                                     log.error(cmd.toString());
                                     log.error(response.toString());
                                 }
-                            } else {
-
                             }
                         }
                     } catch (Throwable e) {
@@ -284,8 +282,10 @@ public abstract class NettyRemotingAbstract {
             responseTable.remove(opaque);
 
             if (responseFuture.getInvokeCallback() != null) {
+                // 说明是异步请求，主要针对发送方发起了异步请求的情况，如果异步回调接口不为空，那么当执行异步接口回调
                 executeInvokeCallback(responseFuture);
             } else {
+                // 同步请求响应
                 responseFuture.putResponse(cmd);
                 responseFuture.release();
             }
@@ -398,11 +398,13 @@ public abstract class NettyRemotingAbstract {
     public RemotingCommand invokeSyncImpl(final Channel channel, final RemotingCommand request,
         final long timeoutMillis)
         throws InterruptedException, RemotingSendRequestException, RemotingTimeoutException {
+        // 请求id
         final int opaque = request.getOpaque();
 
         try {
             final ResponseFuture responseFuture = new ResponseFuture(channel, opaque, timeoutMillis, null, null);
             this.responseTable.put(opaque, responseFuture);
+            // 接受方地址
             final SocketAddress addr = channel.remoteAddress();
             channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
                 @Override
@@ -414,6 +416,7 @@ public abstract class NettyRemotingAbstract {
                         responseFuture.setSendRequestOK(false);
                     }
 
+                    // 写刷数据失败
                     responseTable.remove(opaque);
                     responseFuture.setCause(f.cause());
                     responseFuture.putResponse(null);
@@ -421,6 +424,9 @@ public abstract class NettyRemotingAbstract {
                 }
             });
 
+            // 当接收到response请求之后，会经过netty的InboundHandler然后进入处理response请求的processResponseCommand()方法，
+            // 在这个方法中会根据requestId去找到对应的responseFuture，然后调用responseFuture.putResponse(cmd)方法，responseFuture.putResponse(cmd)里面会间接调用countDownLatch.countDown()，所以线程就不再阻塞了
+            // 也就是说invokeSyncImpl()方法发送请求之后需要等待对端返回response请求，这个request请求线程才能解除阻塞，否则将会阻塞直到超时
             RemotingCommand responseCommand = responseFuture.waitResponse(timeoutMillis);
             if (null == responseCommand) {
                 if (responseFuture.isSendRequestOK()) {
@@ -444,6 +450,7 @@ public abstract class NettyRemotingAbstract {
 
         //相当于request ID, RemotingCommand会为每一个request产生一个request ID, 从0开始, 每次加1
         final int opaque = request.getOpaque();
+        // 使用信号量限制发送异步消息的并发线程数
         boolean acquired = this.semaphoreAsync.tryAcquire(timeoutMillis, TimeUnit.MILLISECONDS);
         if (acquired) {
             final SemaphoreReleaseOnlyOnce once = new SemaphoreReleaseOnlyOnce(this.semaphoreAsync);

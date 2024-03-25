@@ -32,7 +32,7 @@ public class Consumer {
 
     public static void main(String[] args) throws InterruptedException, MQClientException {
 
-        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("please_rename_unique_group_name_4");
+        DefaultMQPushConsumer consumer = new DefaultMQPushConsumer("test_group");
 
         consumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
 
@@ -40,9 +40,9 @@ public class Consumer {
 
         consumer.setNamesrvAddr("127.0.0.1:9876");
 
-        consumer.setPullBatchSize(1);
+//        consumer.setPullBatchSize(1);
 
-        consumer.setPullInterval(5000);
+//        consumer.setPullInterval(5000);
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
 

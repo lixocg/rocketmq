@@ -381,7 +381,6 @@ public class SendMessageProcessor extends AbstractSendMessageProcessor implement
             putMessageResult = this.brokerController.getTransactionalMessageService().prepareMessage(msgInner);
         } else {
             /**处理普通和事物消息的commit/rollback消息*/
-            System.out.println("SendMessageProcessor发送消息 msgInner=="+ JSON.toJSONString(msgInner));
             putMessageResult = this.brokerController.getMessageStore().putMessage(msgInner);
         }
         /**返回给客户端*/
