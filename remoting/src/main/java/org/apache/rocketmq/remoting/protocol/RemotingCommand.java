@@ -177,8 +177,7 @@ public class RemotingCommand {
 
         if (classHeader != null) {
             try {
-                CommandCustomHeader objectHeader = classHeader.newInstance();
-                cmd.customHeader = objectHeader;
+                cmd.customHeader = classHeader.newInstance();
             } catch (InstantiationException e) {
                 return null;
             } catch (IllegalAccessException e) {

@@ -54,8 +54,7 @@ public class RemotingHelper {
 
     public static SocketAddress string2SocketAddress(final String addr) {
         String[] s = addr.split(":");
-        InetSocketAddress isa = new InetSocketAddress(s[0], Integer.parseInt(s[1]));
-        return isa;
+        return new InetSocketAddress(s[0], Integer.parseInt(s[1]));
     }
 
     public static RemotingCommand invokeSync(final String addr, final RemotingCommand request,

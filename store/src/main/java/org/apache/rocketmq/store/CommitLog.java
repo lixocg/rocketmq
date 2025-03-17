@@ -552,7 +552,6 @@ public class CommitLog {
         String topic = msg.getTopic();
         int queueId = msg.getQueueId();
 
-        /**处理延迟消息（定时消息）*/
         final int tranType = MessageSysFlag.getTransactionValue(msg.getSysFlag());
 
         //处理普通消息和事物的提交消息

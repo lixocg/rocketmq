@@ -93,7 +93,7 @@ public class DefaultMessageStoreTest {
         }
     }
 
-    @After
+//    @After
     public void destroy() {
         messageStore.shutdown();
         messageStore.destroy();
